@@ -291,11 +291,15 @@ eval ffmpeg "$flt_log" "$flt_seek" -i '"$input_file"' -i '"$palette_file"' -lavf
 # save as clip if required
 [[ 1 -eq "$opt_save_clip" ]] && {
     [[ 1 -eq "$opt_verbose_log" ]] && export FFREPORT=file="${temp_dir}/ffmpeg-${job_name}-3clip.log"
-    eval ffmpeg "$flt_log" "$flt_seek" -i '"$input_file"' -c:v copy -c:a copy -avoid_negative_ts 1 -map 0 -y '"$clip_file"'
-    [[ $? -ne 0 ]] && {
+    eval ffmpeg "$flt_log" "$flt_seek" -i '"$input_file"' -c:v copy -c:a copy -avoid_negative_ts 1 -map v:0 -map a:0 -y '"$clip_file"'
+    if [[ $? -eq 0 ]] ; then
+        clip_save="${output_file%%.*}"."${clip_file##*.}"
+        mv "$clip_file" "$clip_save"
+        printf "${CGREEN}saved clip file \"${clip_save}\"${CNULL}\n"
+    else
         rm -f "$clip_file"
         display_error "fail to clip input file \"${input_file}\" in task \"${job_name}\"" 9
-    }
+    fi
 }
 
 
